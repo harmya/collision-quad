@@ -239,18 +239,55 @@ fn draw_quadtree(quadtree: &QuadTree) {
 }
 
 fn pick_one_color() -> Color {
-    let colors = vec![RED, GREEN];
+    let colors = vec![RED, GREEN, BLUE, YELLOW];
     let index = gen_range(0, colors.len());
     return colors[index];
 }
 
+fn colour_attraction_factor_matrix() -> Vec<Vec<f64>> {
+    //red, green, blue, yellow
+    let mut matrix = vec![vec![0.0; 4]; 4];
+    matrix[0][0] = 0.8;
+    matrix[0][1] = 0.2;
+    matrix[0][2] = -0.8;
+    matrix[0][3] = 0.6;
+
+    matrix[1][0] = 0.2;
+    matrix[1][1] = 0.8;
+    matrix[1][2] = -0.8;
+    matrix[1][3] = 0.6;
+
+    matrix[2][0] = -0.8;
+    matrix[2][1] = -0.8;
+    matrix[2][2] = 0.8;
+    matrix[2][3] = -0.8;
+    
+    matrix[3][0] = 0.6;
+    matrix[3][1] = 0.6;
+    matrix[3][2] = -0.8;
+    matrix[3][3] = 0.8;
+
+    return matrix;
+}
+
+fn color_to_index(color: Color) -> usize {
+    if color == RED {
+        return 0;
+    } else if color == GREEN {
+        return 1;
+    } else if color == BLUE {
+        return 2;
+    } else {
+        return 3;
+    }
+}
+
 fn get_force(r: f64, p1_color: Color, p2_color: Color) -> f64 {
     let mut attraction_factor = 0.0;
-    if p1_color == p2_color{
-        attraction_factor = 0.8;
-    } else {
-        attraction_factor = -0.5;
-    }
+    let color_matrix = colour_attraction_factor_matrix();
+    let c_1_idx = color_to_index(p1_color);
+    let c_2_idx = color_to_index(p2_color);
+    attraction_factor = color_matrix[c_1_idx][c_2_idx];
     const BETA : f64 = 0.3;
 
     if r < BETA {
@@ -267,7 +304,7 @@ async fn main() {
     let width = macroquad::window::screen_width() as f64;
     let height = macroquad::window::screen_height() as f64;
     let radius = 5.0;
-    let speed = 7.0;
+    let speed = 5.0;
     let num_particles = 1000;
     let mut particles: Vec<Particle> = Vec::new();
 
@@ -336,26 +373,6 @@ async fn main() {
                         final_force_x += force * direction_x;
                         final_force_y += force * direction_y;
                     }
-
-                    // if distance_squared < 4.0 * radius.powi(2) {
-                    //     let distance = distance_squared.sqrt();
-                    //     let nx = dx / distance;
-                    //     let ny = dy / distance;
-            
-                    //     let vx = near_particle.velocity.x - particle.velocity.x;
-                    //     let vy = near_particle.velocity.y - particle.velocity.y;
-            
-                    //     let dot_product = vx * nx + vy * ny;
-
-                    //     if dot_product < 0.0 {
-                    //         let impulse_x = dot_product * nx;
-                    //         let impulse_y = dot_product * ny;
-                    //         near_particle.velocity.x -= impulse_x;
-                    //         near_particle.velocity.y -= impulse_y;
-                    //         particle.velocity.x += impulse_x;
-                    //         particle.velocity.y += impulse_y;
-                    //     }
-                    // }
                 }
             }
             
