@@ -247,27 +247,25 @@ fn pick_one_color() -> Color {
 fn colour_attraction_factor_matrix() -> Vec<Vec<f64>> {
     //red, green, blue, yellow
     let mut matrix = vec![vec![0.0; 4]; 4];
-    matrix[0][0] = 0.8;
-    matrix[0][1] = -0.8;
-    matrix[0][2] = -0.8;
-    matrix[0][3] = -0.8;
+    matrix[0][0] = 0.5;
+    matrix[0][1] = 0.5;
+    matrix[0][2] = 0.5;
+    matrix[0][3] = -0.5;
 
     matrix[1][0] = -0.8;
     matrix[1][1] = 0.8;
-    matrix[1][2] = -0.8;
-    matrix[1][3] = -0.8;
+    matrix[1][2] = 0.5;
+    matrix[1][3] = -0.5;
 
     matrix[2][0] = -0.8;
-    matrix[2][1] = -0.8;
-    matrix[2][2] = 0.8;
-    matrix[2][3] = -0.8;
+    matrix[2][1] = 0.8;
+    matrix[2][2] = 0.5;
+    matrix[2][3] = -0.5;
 
-    matrix[3][0] = -0.8;
-    matrix[3][1] = -0.8;
-    matrix[3][2] = -0.8;
-    matrix[3][3] = 0.8;
-    
-
+    matrix[3][0] = -0.5;
+    matrix[3][1] = -0.5;
+    matrix[3][2] = -0.5;
+    matrix[3][3] = 0.5;
     return matrix;
 }
 
@@ -292,7 +290,7 @@ fn get_force(r: f64, p1_color: Color, p2_color: Color) -> f64 {
     if r < BETA {
         return r / BETA - 1.0;
     } else if BETA < r && r < 1.0 {
-        return (1.0 - (2.0 * r - BETA).abs() / 1.0 - BETA) * attraction_factor;
+        return (1.0 - (2.0 * r - BETA - 1.0).abs() / (1.0 - BETA)) * attraction_factor;
     } else {
         return 0.0;
     }
@@ -317,15 +315,15 @@ async fn main() {
     }, 4);
 
     for _ in 0..num_particles {
-        let start_x = gen_range(100.0, width - 100.0);
-        let start_y = gen_range(100.0, height - 100.0);
+        let random_color = pick_one_color();
+        let location = Position {
+            x: gen_range(radius + 5.0, width - radius - 5.0),
+            y: gen_range(radius + 5.0, height - radius - 5.0),
+        };
+
         let velocity_x = gen_range(-0.0, 0.0);
         let velocity_y = gen_range(-0.0, 0.0);
-        let random_color = pick_one_color();
-        let particle = Particle::new(Position {
-            x: start_x as f64,
-            y: start_y as f64,
-        }, random_color, Velocity {
+        let particle = Particle::new(location, random_color, Velocity {
             x: velocity_x,
             y: velocity_y,
         });
@@ -378,15 +376,15 @@ async fn main() {
             let final_acceleration_x = final_force_x * threshold;
             let final_acceleration_y = final_force_y * threshold;
           
-            particle.velocity.x = 0.90 * particle.velocity.x + final_acceleration_x * t;
-            particle.velocity.y = 0.90 * particle.velocity.y + final_acceleration_y * t;
+            particle.velocity.x = 0.95 * particle.velocity.x + final_acceleration_x * t;
+            particle.velocity.y = 0.95 * particle.velocity.y + final_acceleration_y * t;
 
-            if particle.position.x < radius + 5.0 || particle.position.x > width - radius - 5.0 {
-                particle.velocity.x = -particle.velocity.x;
-            }
-            if particle.position.y < radius + 5.0 || particle.position.y > height - radius - 5.0 {
-                particle.velocity.y = -particle.velocity.y;
-            }
+            // if particle.position.x < radius + 5.0 || particle.position.x > width - radius - 5.0 {
+            //     particle.velocity.x = -particle.velocity.x;
+            // }
+            // if particle.position.y < radius + 5.0 || particle.position.y > height - radius - 5.0 {
+            //     particle.velocity.y = -particle.velocity.y;
+            // }
 
             move_particle(particle, t);
             quadtree.insert(Some(particle.clone()));
