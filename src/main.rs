@@ -248,10 +248,8 @@ fn colour_attraction_factor_matrix() -> Vec<Vec<f64>> {
     //red, green, blue, yellow
     let mut matrix = vec![vec![0.0; 4]; 4];
     for i in 0..4 {
-        matrix[i][i] = 0.8;
+        matrix[i][i] = 0.5;
     }
-    matrix[0][3] = 0.6;
-    matrix[3][0] = -0.6;
     return matrix;
 }
 
