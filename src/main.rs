@@ -260,21 +260,22 @@ fn draw_quadtree(quadtree: &QuadTree) {
 }
 
 fn pick_one_color() -> Color {
-    let colors = vec![RED, GREEN, BLUE, YELLOW];
+    let colors = vec![RED, GREEN];
     let index = gen_range(0, colors.len());
     return colors[index];
 }
 
 fn colour_attraction_factor_matrix() -> Vec<Vec<f64>> {
-    //red, green, blue, yellow
-    //make random matrix
     let mut matrix = vec![vec![0.0; 4]; 4];
-    matrix[0][0] = 1.0;
     return matrix;
 }
 
+fn red_to_red (matrix: &mut Vec<Vec<f64>>) {
+    matrix[0][0] = 1.0;
+}
+
 fn green_to_red (matrix: &mut Vec<Vec<f64>>) {
-    matrix[1][0] = 0.2;
+    matrix[1][0] = 0.3;
 }
 
 fn color_to_index(color: Color) -> usize {
@@ -307,8 +308,8 @@ fn get_force(r: f64, p1_color: Color, p2_color: Color, color_matrix: &Vec<Vec<f6
 async fn main() {
     let width = macroquad::window::screen_width() as f64;
     let height = macroquad::window::screen_height() as f64;
-    let radius = 1.5;
-    let num_particles: u32 = 2000;
+    let radius = 2.0;
+    let num_particles: u32 = 1000;
     let mut particles: Vec<Particle> = Vec::new();
 
     let mut quadtree = QuadTree::new(Rectangle {
