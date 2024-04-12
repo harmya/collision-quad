@@ -266,7 +266,7 @@ fn pick_one_color() -> Color {
 }
 
 fn colour_attraction_factor_matrix() -> Vec<Vec<f64>> {
-    let mut matrix = vec![vec![0.0; 4]; 4];
+    let matrix = vec![vec![0.0; 4]; 4];
     return matrix;
 }
 
@@ -343,12 +343,13 @@ async fn main() {
     let mut i: u128 = 0;
     loop { 
         i += 1;
-        if i % 500 == 0 {
+        if i % 300 == 0 {
+            red_to_red(&mut color_matrix);
+        }
+        if i % 600 == 0 {
              green_to_red(&mut color_matrix);
         }
-        // if i % 1000 == 0 {
-        //     red_away_from_green(&mut color_matrix);
-        // }
+        
         clear_background(BLACK);
         let t = get_frame_time() as f64;
         quadtree.clear_quadtree();
