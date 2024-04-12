@@ -239,20 +239,20 @@ fn draw_quadtree(quadtree: &QuadTree) {
 }
 
 fn pick_one_color() -> Color {
-    let colors = vec![RED, GREEN, BLUE, YELLOW, PURPLE, ORANGE];
+    let colors = vec![RED, GREEN];
     let index = gen_range(0, colors.len());
     return colors[index];
 }
 
 fn get_force(r: f64, p1_color: Color, p2_color: Color) -> f64 {
     let mut attraction_factor = 0.0;
-
-    if p1_color == p2_color {
+    if p1_color == RED && p2_color == RED {
         attraction_factor = 0.8;
     } else {
         attraction_factor = 0.0;
     }
     const BETA : f64 = 0.3;
+
     if r < BETA {
         return r / BETA - 1.0;
     } else if BETA < r && r < 1.0 {
@@ -267,7 +267,7 @@ async fn main() {
     let width = macroquad::window::screen_width() as f64;
     let height = macroquad::window::screen_height() as f64;
     let radius = 5.0;
-    let speed = 100.0;
+    let speed = 0.7;
     let num_particles = 1000;
     let mut particles: Vec<Particle> = Vec::new();
 
@@ -281,10 +281,10 @@ async fn main() {
     }, 4);
 
     for _ in 0..num_particles {
-        let start_x = gen_range(50.0, width - 50.0);
-        let start_y = gen_range(50.0, height - 50.0);
-        let velocity_x = gen_range(-30.0, 30.0);
-        let velocity_y = gen_range(-30.0, 30.0);
+        let start_x = gen_range(100.0, width - 100.0);
+        let start_y = gen_range(100.0, height - 100.0);
+        let velocity_x = gen_range(-1.0, 1.0);
+        let velocity_y = gen_range(-1.0, 1.0);
         let random_color = pick_one_color();
         let particle = Particle::new(Position {
             x: start_x as f64,
@@ -320,7 +320,7 @@ async fn main() {
 
             let mut final_force_x = 0.0;
             let mut final_force_y = 0.0;
-            let threshold = 200.0 * radius;
+            let threshold = 100.0 * radius;
 
             for near_particle in near_particles.iter_mut() {
                 if near_particle.position.x != particle.position.x && near_particle.position.y != particle.position.y {
@@ -331,40 +331,39 @@ async fn main() {
                     let direction_x = dx / distance_squared.sqrt();
                     let direction_y = dy / distance_squared.sqrt();
 
-                    if distance_squared < threshold.powi(2) {
-                        let force = get_force(distance, particle.color, near_particle.color);
-                        println!("Force: {}", force);
+                    if distance < threshold {
+                        let force = get_force(distance / threshold, particle.color, near_particle.color);
                         final_force_x += force * direction_x;
                         final_force_y += force * direction_y;
                     }
 
-                    if distance_squared < 4.0 * radius.powi(2) + radius {
-                        let distance = distance_squared.sqrt();
-                        let nx = dx / distance;
-                        let ny = dy / distance;
+                    // if distance_squared < 4.0 * radius.powi(2) {
+                    //     let distance = distance_squared.sqrt();
+                    //     let nx = dx / distance;
+                    //     let ny = dy / distance;
             
-                        let vx = near_particle.velocity.x - particle.velocity.x;
-                        let vy = near_particle.velocity.y - particle.velocity.y;
+                    //     let vx = near_particle.velocity.x - particle.velocity.x;
+                    //     let vy = near_particle.velocity.y - particle.velocity.y;
             
-                        let dot_product = vx * nx + vy * ny;
+                    //     let dot_product = vx * nx + vy * ny;
 
-                        if dot_product < 0.0 {
-                            let impulse_x = dot_product * nx;
-                            let impulse_y = dot_product * ny;
-                            near_particle.velocity.x -= impulse_x;
-                            near_particle.velocity.y -= impulse_y;
-                            particle.velocity.x += impulse_x;
-                            particle.velocity.y += impulse_y;
-                        }
-                    }
+                    //     if dot_product < 0.0 {
+                    //         let impulse_x = dot_product * nx;
+                    //         let impulse_y = dot_product * ny;
+                    //         near_particle.velocity.x -= impulse_x;
+                    //         near_particle.velocity.y -= impulse_y;
+                    //         particle.velocity.x += impulse_x;
+                    //         particle.velocity.y += impulse_y;
+                    //     }
+                    // }
                 }
             }
             
-            let final_acceleration_x = final_force_x * threshold * 100.0;
-            let final_acceleration_y = final_force_y * threshold * 100.0;
+            let final_acceleration_x = final_force_x * threshold;
+            let final_acceleration_y = final_force_y * threshold;
           
-            particle.velocity.x = 0.99 * particle.velocity.x + final_acceleration_x * t;
-            particle.velocity.y = 0.99 * particle.velocity.y + final_acceleration_y * t;
+            particle.velocity.x = 0.90 * particle.velocity.x + final_acceleration_x * t;
+            particle.velocity.y = 0.90 * particle.velocity.y + final_acceleration_y * t;
 
             if particle.position.x < radius + 5.0 || particle.position.x > width - radius - 5.0 {
                 particle.velocity.x = -particle.velocity.x;
