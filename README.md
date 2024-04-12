@@ -3,8 +3,8 @@
 This is a simple particle life simulation. Particles are created at random positions and move in random directions. 
 
 ### Updates
-Implementing quadtree for collision detection:
-<img src="quad.gif" width="200">
+Implementing quadtree for collision detection: <br>
+<img src="quad.gif" width="600" width="600"
 
 Implemented collision detection using quadtree. The quadtree is used to divide the space into smaller regions and store the particles in the regions. This allows for faster collision detection as we only need to check for collisions between particles in the same region:
 ![Particle Life](https://github.com/harmya/particle-life/blob/main/collision.gif =200x200)
