@@ -248,24 +248,25 @@ fn colour_attraction_factor_matrix() -> Vec<Vec<f64>> {
     //red, green, blue, yellow
     let mut matrix = vec![vec![0.0; 4]; 4];
     matrix[0][0] = 0.8;
-    matrix[0][1] = 0.2;
+    matrix[0][1] = -0.8;
     matrix[0][2] = -0.8;
-    matrix[0][3] = 0.6;
+    matrix[0][3] = -0.8;
 
-    matrix[1][0] = 0.2;
+    matrix[1][0] = -0.8;
     matrix[1][1] = 0.8;
     matrix[1][2] = -0.8;
-    matrix[1][3] = 0.6;
+    matrix[1][3] = -0.8;
 
     matrix[2][0] = -0.8;
     matrix[2][1] = -0.8;
     matrix[2][2] = 0.8;
     matrix[2][3] = -0.8;
-    
-    matrix[3][0] = 0.6;
-    matrix[3][1] = 0.6;
+
+    matrix[3][0] = -0.8;
+    matrix[3][1] = -0.8;
     matrix[3][2] = -0.8;
     matrix[3][3] = 0.8;
+    
 
     return matrix;
 }
@@ -283,13 +284,11 @@ fn color_to_index(color: Color) -> usize {
 }
 
 fn get_force(r: f64, p1_color: Color, p2_color: Color) -> f64 {
-    let mut attraction_factor = 0.0;
     let color_matrix = colour_attraction_factor_matrix();
     let c_1_idx = color_to_index(p1_color);
     let c_2_idx = color_to_index(p2_color);
-    attraction_factor = color_matrix[c_1_idx][c_2_idx];
+    let attraction_factor = color_matrix[c_1_idx][c_2_idx];
     const BETA : f64 = 0.3;
-
     if r < BETA {
         return r / BETA - 1.0;
     } else if BETA < r && r < 1.0 {
