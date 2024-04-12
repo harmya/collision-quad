@@ -246,10 +246,10 @@ fn pick_one_color() -> Color {
 
 fn get_force(r: f64, p1_color: Color, p2_color: Color) -> f64 {
     let mut attraction_factor = 0.0;
-    if p1_color == RED && p2_color == RED {
+    if p1_color == p2_color{
         attraction_factor = 0.8;
     } else {
-        attraction_factor = 0.0;
+        attraction_factor = -0.5;
     }
     const BETA : f64 = 0.3;
 
@@ -267,7 +267,7 @@ async fn main() {
     let width = macroquad::window::screen_width() as f64;
     let height = macroquad::window::screen_height() as f64;
     let radius = 5.0;
-    let speed = 0.7;
+    let speed = 7.0;
     let num_particles = 1000;
     let mut particles: Vec<Particle> = Vec::new();
 
@@ -283,8 +283,8 @@ async fn main() {
     for _ in 0..num_particles {
         let start_x = gen_range(100.0, width - 100.0);
         let start_y = gen_range(100.0, height - 100.0);
-        let velocity_x = gen_range(-1.0, 1.0);
-        let velocity_y = gen_range(-1.0, 1.0);
+        let velocity_x = gen_range(-0.0, 0.0);
+        let velocity_y = gen_range(-0.0, 0.0);
         let random_color = pick_one_color();
         let particle = Particle::new(Position {
             x: start_x as f64,
@@ -320,7 +320,7 @@ async fn main() {
 
             let mut final_force_x = 0.0;
             let mut final_force_y = 0.0;
-            let threshold = 100.0 * radius;
+            let threshold = 100.0;
 
             for near_particle in near_particles.iter_mut() {
                 if near_particle.position.x != particle.position.x && near_particle.position.y != particle.position.y {
