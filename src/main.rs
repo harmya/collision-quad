@@ -239,7 +239,7 @@ fn draw_quadtree(quadtree: &QuadTree) {
 }
 
 fn pick_one_color() -> Color {
-    let colors = vec![RED, GREEN, BLUE, YELLOW];
+    let colors = vec![RED, GREEN];
     let index = gen_range(0, colors.len());
     return colors[index];
 }
@@ -248,18 +248,23 @@ fn colour_attraction_factor_matrix() -> Vec<Vec<f64>> {
     //red, green, blue, yellow
     //make random matrix
     let mut matrix = vec![vec![0.0; 4]; 4];
-    for i in 0..4 {
-        for j in 0..4 {
-            if i == j {
-                matrix[i][j] = gen_range(0.5, 1.0);
-            } else {
-                matrix[i][j] = gen_range(-1.0, 1.0);
-            }
-        }
-    }
+    matrix[0][0] = 2.5;
+
+    // for i in 0..4 {
+    //     for j in 0..4 {
+    //         if i == j {
+    //             matrix[i][j] = gen_range(0.5, 1.0);
+    //         } else {
+    //             matrix[i][j] = gen_range(-1.0, 1.0);
+    //         }
+    //     }
+    // }
     return matrix;
 }
 
+fn fun (matrix: &mut Vec<Vec<f64>>) {
+    matrix[1][0] = 0.8;
+}
 
 fn color_to_index(color: Color) -> usize {
     if color == RED {
@@ -292,7 +297,6 @@ async fn main() {
     let width = macroquad::window::screen_width() as f64;
     let height = macroquad::window::screen_height() as f64;
     let radius = 3.0;
-    let speed = 8.0;
     let num_particles = 1000;
     let mut particles: Vec<Particle> = Vec::new();
 
@@ -328,7 +332,7 @@ async fn main() {
     loop { 
         i += 1;
         clear_background(BLACK);
-        let t = get_frame_time() as f64 * speed;
+        let t = get_frame_time() as f64;
         quadtree.clear_quadtree();
         for particle in particles.iter_mut() {
             let next_time_position = Position {
@@ -352,20 +356,18 @@ async fn main() {
             let threshold = 100.0;
 
             for near_particle in near_particles.iter_mut() {
-                if near_particle.position.x != particle.position.x && near_particle.position.y != particle.position.y {
-                    let dx = near_particle.position.x - particle.position.x;
-                    let dy = near_particle.position.y - particle.position.y;
-                    let distance_squared = dx.powi(2) + dy.powi(2);
-                    let distance = distance_squared.sqrt();
-                    let direction_x = dx / distance_squared.sqrt();
-                    let direction_y = dy / distance_squared.sqrt();
-
+                
+                let dx = near_particle.position.x - particle.position.x;
+                let dy = near_particle.position.y - particle.position.y;
+                let distance_squared = dx.powi(2) + dy.powi(2);
+                let distance = distance_squared.sqrt();
+                let direction_x = dx / distance_squared.sqrt();
+                let direction_y = dy / distance_squared.sqrt();
+                let force = get_force(distance / threshold, particle.color, near_particle.color, &color_matrix);
+                final_force_x += force * direction_x;
+                final_force_y += force * direction_y;
                     
-                    let force = get_force(distance / threshold, particle.color, near_particle.color, &color_matrix);
-                    final_force_x += force * direction_x;
-                    final_force_y += force * direction_y;
-                    
-                }
+                
             }
             
             let final_acceleration_x = final_force_x * threshold * 2.0;
@@ -375,6 +377,10 @@ async fn main() {
             particle.velocity.x = velocity_decay * particle.velocity.x + final_acceleration_x * t;
             particle.velocity.y = velocity_decay * particle.velocity.y + final_acceleration_y * t;
 
+            if (particle.velocity.x.abs().powi(2) + particle.velocity.y.abs().powi(2)).sqrt() < 0.1 {
+                particle.velocity.x = 0.0;
+                particle.velocity.y = 0.0;
+            }
             // wrap around
             if particle.position.x < 0.0 {
                 particle.velocity.x = -particle.velocity.x;
@@ -392,9 +398,6 @@ async fn main() {
             quadtree.insert(Some(particle.clone()));
             draw_circle(particle.position.x as f32, particle.position.y as f32, radius as f32, particle.color);
         }
-        if i % 500 == 0 {
-            color_matrix = colour_attraction_factor_matrix();
-        }
         //draw_quadtree(&quadtree);
         next_frame().await;
     }
@@ -403,8 +406,8 @@ async fn main() {
 fn window_conf() -> Conf {
     Conf {
         window_title: "Particle Life".to_owned(),
-        window_width: 800,
-        window_height: 800,
+        window_width: 600,
+        window_height: 600,
         ..Default::default()
     }
 }
