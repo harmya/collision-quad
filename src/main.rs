@@ -1,7 +1,7 @@
 use std::borrow::Borrow;
 
 use macroquad::rand::gen_range;
-use macroquad::prelude::*;
+use macroquad::{color, prelude::*};
 
 #[derive(Clone, Copy)]
 struct Position {
@@ -247,25 +247,9 @@ fn pick_one_color() -> Color {
 fn colour_attraction_factor_matrix() -> Vec<Vec<f64>> {
     //red, green, blue, yellow
     let mut matrix = vec![vec![0.0; 4]; 4];
-    matrix[0][0] = 0.5;
-    matrix[0][1] = 0.5;
-    matrix[0][2] = 0.5;
-    matrix[0][3] = -0.5;
-
-    matrix[1][0] = -0.8;
-    matrix[1][1] = 0.8;
-    matrix[1][2] = 0.5;
-    matrix[1][3] = -0.5;
-
-    matrix[2][0] = -0.8;
-    matrix[2][1] = 0.8;
-    matrix[2][2] = 0.5;
-    matrix[2][3] = -0.5;
-
-    matrix[3][0] = -0.5;
-    matrix[3][1] = -0.5;
-    matrix[3][2] = -0.5;
-    matrix[3][3] = 0.5;
+    for i in 0..4 {
+        matrix[i][i] = 0.8;
+    }
     return matrix;
 }
 
@@ -281,8 +265,7 @@ fn color_to_index(color: Color) -> usize {
     }
 }
 
-fn get_force(r: f64, p1_color: Color, p2_color: Color) -> f64 {
-    let color_matrix = colour_attraction_factor_matrix();
+fn get_force(r: f64, p1_color: Color, p2_color: Color, color_matrix: &Vec<Vec<f64>>) -> f64 {
     let c_1_idx = color_to_index(p1_color);
     let c_2_idx = color_to_index(p2_color);
     let attraction_factor = color_matrix[c_1_idx][c_2_idx];
@@ -300,9 +283,9 @@ fn get_force(r: f64, p1_color: Color, p2_color: Color) -> f64 {
 async fn main() {
     let width = macroquad::window::screen_width() as f64;
     let height = macroquad::window::screen_height() as f64;
-    let radius = 5.0;
-    let speed = 5.0;
-    let num_particles = 1000;
+    let radius = 2.0;
+    let speed = 1.0;
+    let num_particles = 5000;
     let mut particles: Vec<Particle> = Vec::new();
 
     let mut quadtree = QuadTree::new(Rectangle {
@@ -317,12 +300,12 @@ async fn main() {
     for _ in 0..num_particles {
         let random_color = pick_one_color();
         let location = Position {
-            x: gen_range(radius + 5.0, width - radius - 5.0),
-            y: gen_range(radius + 5.0, height - radius - 5.0),
+            x: gen_range(radius + 5.0, radius + width - 5.0),
+            y: gen_range(radius + 5.0, radius + height - 5.0),
         };
 
-        let velocity_x = gen_range(-0.0, 0.0);
-        let velocity_y = gen_range(-0.0, 0.0);
+        let velocity_x = gen_range(-1.0, 1.0);
+        let velocity_y = gen_range(-1.0, 1.0);
         let particle = Particle::new(location, random_color, Velocity {
             x: velocity_x,
             y: velocity_y,
@@ -332,6 +315,7 @@ async fn main() {
         quadtree.insert(Some(particle));
     }
 
+    let color_matrix = colour_attraction_factor_matrix();
 
     loop { 
         clear_background(BLACK);
@@ -343,12 +327,14 @@ async fn main() {
                 y: particle.position.y + particle.velocity.y * t,
             };
 
+            let threshold = 100.0;
+
             let mut near_particles = quadtree.query(&Rectangle {
-                height: 1.5 * radius,
-                width: 1.5 * radius,
+                height: threshold,
+                width: threshold,
                 position: Position {
-                    x: next_time_position.x - 1.5 * radius,
-                    y: next_time_position.y - 1.5 * radius
+                    x: next_time_position.x - radius - threshold / 2.0, 
+                    y: next_time_position.y - radius - threshold / 2.0,
                 }
             });
 
@@ -366,7 +352,7 @@ async fn main() {
                     let direction_y = dy / distance_squared.sqrt();
 
                     if distance < threshold {
-                        let force = get_force(distance / threshold, particle.color, near_particle.color);
+                        let force = get_force(distance / threshold, particle.color, near_particle.color, &color_matrix);
                         final_force_x += force * direction_x;
                         final_force_y += force * direction_y;
                     }
@@ -379,12 +365,12 @@ async fn main() {
             particle.velocity.x = 0.95 * particle.velocity.x + final_acceleration_x * t;
             particle.velocity.y = 0.95 * particle.velocity.y + final_acceleration_y * t;
 
-            // if particle.position.x < radius + 5.0 || particle.position.x > width - radius - 5.0 {
-            //     particle.velocity.x = -particle.velocity.x;
-            // }
-            // if particle.position.y < radius + 5.0 || particle.position.y > height - radius - 5.0 {
-            //     particle.velocity.y = -particle.velocity.y;
-            // }
+            if particle.position.x < radius + 5.0 || particle.position.x > width - radius - 5.0 {
+                particle.velocity.x = -particle.velocity.x;
+            }
+            if particle.position.y < radius + 5.0 || particle.position.y > height - radius - 5.0 {
+                particle.velocity.y = -particle.velocity.y;
+            }
 
             move_particle(particle, t);
             quadtree.insert(Some(particle.clone()));
