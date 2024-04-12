@@ -215,26 +215,30 @@ impl QuadTree {
     }
 }
 
-fn move_particle(particle: &mut Particle, t: f64) {
-    particle.position.x = particle.position.x + particle.velocity.x * t;
-    particle.position.y = particle.position.y + particle.velocity.y * t;
+fn move_particle(particle: &mut Particle, t: f64, width: f64, height: f64) {
 
     // if particle out side right boundary, wrap to left boundary
-    if particle.position.x - 2.0 > macroquad::window::screen_width() as f64 {
-        particle.position.x = 0.0;
+    if particle.position.x - 2.0 > width {
+        particle.position.x = 0.0 - 2.0;
     }
     // if particle out side left boundary, wrap to right boundary
     if particle.position.x + 2.0 < 0.0 {
-        particle.position.x = macroquad::window::screen_width() as f64;
+        particle.position.x = width + 2.0;
     }
     // if particle out side bottom boundary, wrap to top boundary
-    if particle.position.y - 2.0 > macroquad::window::screen_height() as f64 {
-        particle.position.y = 0.0;
+    if particle.position.y - 2.0 > height as f64 {
+        particle.position.y = 0.0 - 2.0;
     }
     // if particle out side top boundary, wrap to bottom boundary
     if particle.position.y + 2.0 < 0.0 {
-        particle.position.y = macroquad::window::screen_height() as f64;
+        particle.position.y = height as f64 + 2.0;
     }
+
+
+    particle.position.x = particle.position.x + particle.velocity.x * t;
+    particle.position.y = particle.position.y + particle.velocity.y * t;
+
+
 }
 
 
@@ -333,8 +337,8 @@ fn get_force(r: f64, p1_color: Color, p2_color: Color, color_matrix: &Vec<Vec<f6
 async fn main() {
     let width = macroquad::window::screen_width() as f64;
     let height = macroquad::window::screen_height() as f64;
-    let radius = 1.0;
-    let num_particles = 2000;
+    let radius = 1.5;
+    let num_particles = 1000;
     let mut particles: Vec<Particle> = Vec::new();
 
     let mut quadtree = QuadTree::new(Rectangle {
@@ -383,7 +387,7 @@ async fn main() {
                 y: particle.position.y + particle.velocity.y * t,
             };
 
-            let threshold = 100.0;
+            let threshold = 200.0;
 
             let mut near_particles = quadtree.query(&Rectangle {
                 height: threshold * 2.0,
@@ -419,7 +423,7 @@ async fn main() {
             particle.velocity.x = velocity_decay * particle.velocity.x + final_acceleration_x * t;
             particle.velocity.y = velocity_decay * particle.velocity.y + final_acceleration_y * t;
 
-            move_particle(particle, t);
+            move_particle(particle, t, width, height);
             quadtree.insert(Some(particle.clone()));
             draw_circle(particle.position.x as f32, particle.position.y as f32, radius as f32, particle.color);
         }
@@ -431,8 +435,8 @@ async fn main() {
 fn window_conf() -> Conf {
     Conf {
         window_title: "Particle Life".to_owned(),
-        window_width: 600,
-        window_height: 600,
+        window_width: 800,
+        window_height: 800,
         ..Default::default()
     }
 }
