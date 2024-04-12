@@ -218,6 +218,23 @@ impl QuadTree {
 fn move_particle(particle: &mut Particle, t: f64) {
     particle.position.x = particle.position.x + particle.velocity.x * t;
     particle.position.y = particle.position.y + particle.velocity.y * t;
+
+    // if particle out side right boundary, wrap to left boundary
+    if particle.position.x - 2.0 > macroquad::window::screen_width() as f64 {
+        particle.position.x = 0.0;
+    }
+    // if particle out side left boundary, wrap to right boundary
+    if particle.position.x + 2.0 < 0.0 {
+        particle.position.x = macroquad::window::screen_width() as f64;
+    }
+    // if particle out side bottom boundary, wrap to top boundary
+    if particle.position.y - 2.0 > macroquad::window::screen_height() as f64 {
+        particle.position.y = 0.0;
+    }
+    // if particle out side top boundary, wrap to bottom boundary
+    if particle.position.y + 2.0 < 0.0 {
+        particle.position.y = macroquad::window::screen_height() as f64;
+    }
 }
 
 
