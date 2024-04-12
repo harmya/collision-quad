@@ -301,7 +301,7 @@ async fn main() {
     let width = macroquad::window::screen_width() as f64;
     let height = macroquad::window::screen_height() as f64;
     let radius = 1.0;
-    let num_particles = 1500;
+    let num_particles = 2000;
     let mut particles: Vec<Particle> = Vec::new();
 
     let mut quadtree = QuadTree::new(Rectangle {
@@ -385,19 +385,6 @@ async fn main() {
             let velocity_decay = 0.5f64.powf(t/0.05);
             particle.velocity.x = velocity_decay * particle.velocity.x + final_acceleration_x * t;
             particle.velocity.y = velocity_decay * particle.velocity.y + final_acceleration_y * t;
-
-            // wrap around
-            if particle.position.x < 0.0 {
-                particle.velocity.x = -particle.velocity.x;
-            } else if particle.position.x > width{
-                particle.velocity.x = -particle.velocity.x;
-            }
-
-            if particle.position.y < 0.0 {
-                particle.velocity.y = -particle.velocity.y;
-            } else if particle.position.y > height {
-                particle.velocity.y = -particle.velocity.y;
-            }
 
             move_particle(particle, t);
             quadtree.insert(Some(particle.clone()));
