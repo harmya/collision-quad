@@ -164,6 +164,22 @@ impl QuadTree {
         let bw = self.boundary.width;
         let bh = self.boundary.height;
 
+        if x > bx + bw {
+            return x - w <= bx;
+        }
+
+        if x + w < bx {
+            return x + w >= bx + bw;
+        }
+
+        if y > by + bh {
+            return y - h <= by;
+        }
+
+        if y + h < by {
+            return y + h >= by + bh;
+        }
+
         return x + w >= bx && x <= bx + bw && y + h >= by && y <= by + bh;
     }
 
