@@ -248,7 +248,7 @@ fn colour_attraction_factor_matrix() -> Vec<Vec<f64>> {
     //red, green, blue, yellow
     //make random matrix
     let mut matrix = vec![vec![0.0; 4]; 4];
-    matrix[0][0] = 2.5;
+    matrix[0][0] = 1.0;
 
     // for i in 0..4 {
     //     for j in 0..4 {
@@ -262,8 +262,12 @@ fn colour_attraction_factor_matrix() -> Vec<Vec<f64>> {
     return matrix;
 }
 
-fn fun (matrix: &mut Vec<Vec<f64>>) {
-    matrix[1][0] = 0.8;
+fn green_to_red (matrix: &mut Vec<Vec<f64>>) {
+    matrix[1][0] = 0.2;
+}
+
+fn red_away_from_green (matrix: &mut Vec<Vec<f64>>) {
+    matrix[0][1] = -1.0;
 }
 
 fn color_to_index(color: Color) -> usize {
@@ -282,7 +286,7 @@ fn get_force(r: f64, p1_color: Color, p2_color: Color, color_matrix: &Vec<Vec<f6
     let c_1_idx = color_to_index(p1_color);
     let c_2_idx = color_to_index(p2_color);
     let attraction_factor = color_matrix[c_1_idx][c_2_idx];
-    const BETA : f64 = 0.4;
+    const BETA : f64 = 0.3;
     if r < BETA {
         return r / BETA - 1.0;
     } else if BETA < r && r < 1.0 {
@@ -296,8 +300,8 @@ fn get_force(r: f64, p1_color: Color, p2_color: Color, color_matrix: &Vec<Vec<f6
 async fn main() {
     let width = macroquad::window::screen_width() as f64;
     let height = macroquad::window::screen_height() as f64;
-    let radius = 3.0;
-    let num_particles = 1000;
+    let radius = 1.0;
+    let num_particles = 1500;
     let mut particles: Vec<Particle> = Vec::new();
 
     let mut quadtree = QuadTree::new(Rectangle {
@@ -316,8 +320,8 @@ async fn main() {
             y: gen_range(radius + 5.0, radius + height - 5.0),
         };
 
-        let velocity_x = gen_range(-1.0, 1.0);
-        let velocity_y = gen_range(-1.0, 1.0);
+        let velocity_x = gen_range(-0.0, 0.0);
+        let velocity_y = gen_range(-0.0, 0.0);
         let particle = Particle::new(location, random_color, Velocity {
             x: velocity_x,
             y: velocity_y,
@@ -331,6 +335,12 @@ async fn main() {
     let mut i: u128 = 0;
     loop { 
         i += 1;
+        if i % 500 == 0 {
+            green_to_red(&mut color_matrix);
+        }
+        if i % 1000 == 0 {
+            red_away_from_green(&mut color_matrix);
+        }
         clear_background(BLACK);
         let t = get_frame_time() as f64;
         quadtree.clear_quadtree();
@@ -340,20 +350,19 @@ async fn main() {
                 y: particle.position.y + particle.velocity.y * t,
             };
 
-            let threshold = 50.0;
+            let threshold = 100.0;
 
             let mut near_particles = quadtree.query(&Rectangle {
-                height: threshold,
-                width: threshold,
+                height: threshold * 2.0,
+                width: threshold * 2.0,
                 position: Position {
-                    x: next_time_position.x - radius - threshold / 2.0, 
-                    y: next_time_position.y - radius - threshold / 2.0,
+                    x: next_time_position.x - radius - threshold,
+                    y: next_time_position.y - radius - threshold,
                 }
             });
 
             let mut final_force_x = 0.0;
             let mut final_force_y = 0.0;
-            let threshold = 100.0;
 
             for near_particle in near_particles.iter_mut() {
                 
@@ -377,10 +386,6 @@ async fn main() {
             particle.velocity.x = velocity_decay * particle.velocity.x + final_acceleration_x * t;
             particle.velocity.y = velocity_decay * particle.velocity.y + final_acceleration_y * t;
 
-            if (particle.velocity.x.abs().powi(2) + particle.velocity.y.abs().powi(2)).sqrt() < 0.1 {
-                particle.velocity.x = 0.0;
-                particle.velocity.y = 0.0;
-            }
             // wrap around
             if particle.position.x < 0.0 {
                 particle.velocity.x = -particle.velocity.x;
