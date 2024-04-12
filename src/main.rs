@@ -270,42 +270,11 @@ fn colour_attraction_factor_matrix() -> Vec<Vec<f64>> {
     //make random matrix
     let mut matrix = vec![vec![0.0; 4]; 4];
     matrix[0][0] = 1.0;
-    matrix[1][1] = 1.0;
-    matrix[2][2] = 1.0;
-    matrix[3][3] = 1.0;
-
-    for i in 0..4 {
-        for j in 0..4 {
-            if i == j {
-                continue;
-            } else {
-                matrix[i][j] = -0.5;
-            }
-        }
-    }
-
-
-
-
-
-    // for i in 0..4 {
-    //     for j in 0..4 {
-    //         if i == j {
-    //             matrix[i][j] = gen_range(0.5, 1.0);
-    //         } else {
-    //             matrix[i][j] = gen_range(-1.0, 1.0);
-    //         }
-    //     }
-    // }
     return matrix;
 }
 
 fn green_to_red (matrix: &mut Vec<Vec<f64>>) {
     matrix[1][0] = 0.2;
-}
-
-fn red_away_from_green (matrix: &mut Vec<Vec<f64>>) {
-    matrix[0][1] = -1.0;
 }
 
 fn color_to_index(color: Color) -> usize {
@@ -428,7 +397,7 @@ async fn main() {
             quadtree.insert(Some(particle.clone()));
             draw_circle(particle.position.x as f32, particle.position.y as f32, radius as f32, particle.color);
         }
-        draw_quadtree(&quadtree);
+        //draw_quadtree(&quadtree);
         next_frame().await;
     }
 }
