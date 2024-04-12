@@ -239,7 +239,7 @@ fn draw_quadtree(quadtree: &QuadTree) {
 }
 
 fn pick_one_color() -> Color {
-    let colors = vec![RED, GREEN, BLUE, YELLOW];
+    let colors = vec![RED, GREEN];
     let index = gen_range(0, colors.len());
     return colors[index];
 }
@@ -250,6 +250,8 @@ fn colour_attraction_factor_matrix() -> Vec<Vec<f64>> {
     for i in 0..4 {
         matrix[i][i] = 0.8;
     }
+    matrix[0][3] = 0.6;
+    matrix[3][0] = -0.6;
     return matrix;
 }
 
@@ -284,8 +286,8 @@ async fn main() {
     let width = macroquad::window::screen_width() as f64;
     let height = macroquad::window::screen_height() as f64;
     let radius = 2.0;
-    let speed = 1.0;
-    let num_particles = 5000;
+    let speed = 0.5;
+    let num_particles = 2000;
     let mut particles: Vec<Particle> = Vec::new();
 
     let mut quadtree = QuadTree::new(Rectangle {
@@ -365,11 +367,15 @@ async fn main() {
             particle.velocity.x = 0.95 * particle.velocity.x + final_acceleration_x * t;
             particle.velocity.y = 0.95 * particle.velocity.y + final_acceleration_y * t;
 
-            if particle.position.x < radius + 5.0 || particle.position.x > width - radius - 5.0 {
-                particle.velocity.x = -particle.velocity.x;
+            if particle.position.x + 2.0 * radius <= 0.0 {
+                particle.position.x = width - 2.0 * radius;
+            } else if particle.position.x >= width - 2.0 * radius {
+                particle.position.x = 2.0 * radius;
             }
-            if particle.position.y < radius + 5.0 || particle.position.y > height - radius - 5.0 {
-                particle.velocity.y = -particle.velocity.y;
+            if particle.position.y + 2.0 * radius <= 0.0 {
+                particle.position.y = height - 2.0 * radius;
+            } else if particle.position.y >= height - 2.0 * radius {
+                particle.position.y = 2.0 * radius;
             }
 
             move_particle(particle, t);
@@ -384,8 +390,8 @@ async fn main() {
 fn window_conf() -> Conf {
     Conf {
         window_title: "Particle Life".to_owned(),
-        window_width: 1200,
-        window_height: 800,
+        window_width: 600,
+        window_height: 600,
         ..Default::default()
     }
 }
