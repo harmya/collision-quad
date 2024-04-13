@@ -309,7 +309,7 @@ async fn main() {
     let width = macroquad::window::screen_width() as f64;
     let height = macroquad::window::screen_height() as f64;
     let radius = 2.0;
-    let num_particles: u32 = 1000;
+    let num_particles: u32 = 2000;
     let mut particles: Vec<Particle> = Vec::new();
 
     let mut quadtree = QuadTree::new(Rectangle {
@@ -407,8 +407,8 @@ async fn main() {
 fn window_conf() -> Conf {
     Conf {
         window_title: "Particle Life".to_owned(),
-        window_width: 500,
-        window_height: 500,
+        window_width: 1000,
+        window_height: 800,
         ..Default::default()
     }
 }
